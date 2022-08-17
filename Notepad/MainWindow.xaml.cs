@@ -25,8 +25,11 @@ namespace Notepad
     public partial class MainWindow : Window
     {
         public static MainWindow Window;
-        private string _filePath = "C:\\Users\\dfyzp\\Desktop\\Notepad\\Notepad\\bin\\Debug\\test.txt";
+        private string _filePath = @"C:\Users\dfyzp\Desktop\Notepad\Notepad\bin\Debug\test.txt";
+        private string _fileName;
         private string _contents;
+
+        private bool change = false;
         public MainWindow()
         {
             InitializeComponent();
@@ -41,6 +44,9 @@ namespace Notepad
 
             textBox1.Text += _contents;
             openMenuItem.IsSubmenuOpen = true;
+
+            nameFile.Content = Path.GetFileName(_filePath);
+            
         }
 
         private void MovingWin(object sender, RoutedEventArgs e)
@@ -52,7 +58,38 @@ namespace Notepad
         private void ExitButton_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (Mouse.LeftButton == MouseButtonState.Pressed)
-                this.Close();
+            {
+                string messageBoxText = "Do you want to save changes?";
+                string caption = "Word Processor";
+                MessageBoxButton button = MessageBoxButton.YesNoCancel;
+
+                if (change)
+                {
+                    MessageBoxResult result = MessageBox.Show(messageBoxText, caption, button);
+
+                    // Process message box results
+                    switch (result)
+                    {
+                        case MessageBoxResult.Yes:
+                            Save();
+                            this.Close();
+
+                            break;
+                        case MessageBoxResult.No:
+                            Save();
+                            this.Close();
+
+                            break;
+                        case MessageBoxResult.Cancel:
+
+
+                            break;
+
+                    }
+                }
+                else
+                    this.Close();
+            }
         }
 
         private void MaxButton_MouseDown(object sendem, MouseButtonEventArgs e)
@@ -68,8 +105,6 @@ namespace Notepad
                 this.WindowState = WindowState.Normal;
                 this.BorderThickness = new System.Windows.Thickness(0);
             }
-
-
         }
 
         private void MinButton_MouseDown(object sendem, MouseButtonEventArgs e)
@@ -92,9 +127,22 @@ namespace Notepad
                 textBox1.SelectionStart = textBox1.Text.Length;
             }
 
+            if (e.Key != null && !change && e.Key != Key.CapsLock && e.Key != Key.LeftCtrl && e.Key != Key.LeftShift && e.Key != Key.LeftAlt && e.Key != Key.RightAlt && e.Key != Key.RightCtrl && e.Key != Key.RightShift && e.Key != Key.Right && e.Key != Key.Left && e.Key != Key.Up && e.Key != Key.Down && e.Key != Key.Escape)
+            {
+                change = true;
+                nameFile.Content += "*";
+            }
+                
+
             if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Key.S)
             {
                 Save();
+                string nameString = nameFile.Content.ToString();
+                if (change)
+                {
+                    nameFile.Content = nameString.Remove(nameString.Length - 1);
+                    change = false;
+                }
             }
         }
 
@@ -105,6 +153,21 @@ namespace Notepad
                 writer.Write(textBox1.Text);
                 //File.WriteAllText(_filePath, _contents);
                 writer.Close();
+            }
+        }
+        private void Open()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+                textBox1.Text = File.ReadAllText(openFileDialog.FileName);
+        }
+
+        private void SaveAs()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true || !String.IsNullOrEmpty(openFileDialog.FileName))
+            {
+                File.WriteAllText(openFileDialog.FileName, textBox1.Text);
             }
         }
 
@@ -120,18 +183,12 @@ namespace Notepad
 
         private void openMenuItem_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-                textBox1.Text = File.ReadAllText(openFileDialog.FileName);
+            Open();
         }
 
         private void MenuItem_PreviewMouseDown_1(object sender, MouseButtonEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true || !String.IsNullOrEmpty(openFileDialog.FileName))
-            {
-                File.WriteAllText(openFileDialog.FileName, textBox1.Text);
-            }
+            SaveAs();
         }
 
         private void textBox1_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -144,6 +201,11 @@ namespace Notepad
 
             else if (e.Delta < 0)
                 textBox1.FontSize -= 1;
+        }
+
+        private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            textBox1.SelectionStart = textBox1.Text.Length;
         }
     }
 }
