@@ -133,5 +133,17 @@ namespace Notepad
                 File.WriteAllText(openFileDialog.FileName, textBox1.Text);
             }
         }
+
+        private void textBox1_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers != ModifierKeys.Control)
+                return;
+
+            if (e.Delta > 0)
+                textBox1.FontSize += 1;
+
+            else if (e.Delta < 0)
+                textBox1.FontSize -= 1;
+        }
     }
 }
