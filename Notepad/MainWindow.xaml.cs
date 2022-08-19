@@ -165,11 +165,8 @@ namespace Notepad
             {
                 _newFile = false;
                 _filePath = dialog.FileName;
-                nameFile.Content = Path.GetFileName(_filePath);
-                
-            }
-
-            
+                nameFile.Content = Path.GetFileName(_filePath);   
+            }   
         }
 
         private void Save()
@@ -196,11 +193,7 @@ namespace Notepad
 
         private void SaveAs()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true || !String.IsNullOrEmpty(openFileDialog.FileName))
-            {
-                File.WriteAllText(openFileDialog.FileName, textBox1.Text);
-            }
+            FileDialog fileDialog = new FileDialog();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -238,6 +231,11 @@ namespace Notepad
         private void DockPanel_MouseDown(object sender, MouseButtonEventArgs e)
         {
             textBox1.SelectionStart = textBox1.Text.Length;
+        }
+
+        private void MenuItem_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            SaveNewFile();
         }
     }
 }
