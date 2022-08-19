@@ -25,28 +25,35 @@ namespace Notepad
     public partial class MainWindow : Window
     {
         public static MainWindow Window;
-        private string _filePath = @"C:\Users\dfyzp\Desktop\Notepad\Notepad\bin\Debug\test.txt";
-        private string _fileName;
+        private string _filePath = "";
         private string _contents;
+        private string[] _args = Environment.GetCommandLineArgs();
 
-        private bool change = false;
+        private bool _change = false;
+        private bool _newFile = true;
         public MainWindow()
         {
             InitializeComponent();
 
             Window = this;
-            //string filename = @"a.txt";
-            string[] args = Environment.GetCommandLineArgs();
-
-            if (args.Length > 1)
-                _filePath = args[1];
-            _contents = File.ReadAllText(_filePath);
-
-            textBox1.Text += _contents;
-            openMenuItem.IsSubmenuOpen = true;
-
-            nameFile.Content = Path.GetFileName(_filePath);
             
+
+            if (_args.Length > 1)
+            {
+                _filePath = _args[1];
+                _contents = File.ReadAllText(_filePath);
+
+                textBox1.Text += _contents;
+                openMenuItem.IsSubmenuOpen = true;
+
+                nameFile.Content = Path.GetFileName(_filePath);
+
+                _newFile = false;
+            }
+            else
+            {
+                nameFile.Content = "New file";
+            }
         }
 
         private void MovingWin(object sender, RoutedEventArgs e)
@@ -63,7 +70,7 @@ namespace Notepad
                 string caption = "Word Processor";
                 MessageBoxButton button = MessageBoxButton.YesNoCancel;
 
-                if (change)
+                if (_change)
                 {
                     MessageBoxResult result = MessageBox.Show(messageBoxText, caption, button);
 
@@ -127,9 +134,9 @@ namespace Notepad
                 textBox1.SelectionStart = textBox1.Text.Length;
             }
 
-            if (e.Key != null && !change && e.Key != Key.CapsLock && e.Key != Key.LeftCtrl && e.Key != Key.LeftShift && e.Key != Key.LeftAlt && e.Key != Key.RightAlt && e.Key != Key.RightCtrl && e.Key != Key.RightShift && e.Key != Key.Right && e.Key != Key.Left && e.Key != Key.Up && e.Key != Key.Down && e.Key != Key.Escape)
+            if (e.Key != null && !_change && e.Key != Key.CapsLock && e.Key != Key.LeftCtrl && e.Key != Key.LeftShift && e.Key != Key.LeftAlt && e.Key != Key.RightAlt && e.Key != Key.RightCtrl && e.Key != Key.RightShift && e.Key != Key.Right && e.Key != Key.Left && e.Key != Key.Up && e.Key != Key.Down && e.Key != Key.Escape)
             {
-                change = true;
+                _change = true;
                 nameFile.Content += "*";
             }
                 
@@ -138,16 +145,41 @@ namespace Notepad
             {
                 Save();
                 string nameString = nameFile.Content.ToString();
-                if (change)
+                if (_change && !_newFile)
                 {
                     nameFile.Content = nameString.Remove(nameString.Length - 1);
-                    change = false;
+                    _change = false;
                 }
             }
         }
 
+        private void SaveNewFile()
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.FileName = "NewFile"; 
+            dialog.DefaultExt = ".text"; 
+            dialog.Filter = "Text documents (.txt)|*.txt";
+
+            Nullable<bool> result = dialog.ShowDialog();
+            if (result == true)
+            {
+                _newFile = false;
+                _filePath = dialog.FileName;
+                nameFile.Content = Path.GetFileName(_filePath);
+                
+            }
+
+            
+        }
+
         private void Save()
         {
+            if(_newFile)
+            {
+                SaveNewFile();
+                return;
+            }
+
             using (StreamWriter writer = new StreamWriter(_filePath))
             {
                 writer.Write(textBox1.Text);
@@ -188,7 +220,7 @@ namespace Notepad
 
         private void MenuItem_PreviewMouseDown_1(object sender, MouseButtonEventArgs e)
         {
-            SaveAs();
+            SaveNewFile();
         }
 
         private void textBox1_MouseWheel(object sender, MouseWheelEventArgs e)
